@@ -46,7 +46,7 @@ The IP addresses of the communication partners of the confiscated notebook with 
 \end{verbatim}
 
 \subsection*{Rep. 1.c - Filter}
-The relevant data was filtered by source \& destination IP, using wireshark and exported:
+The relevant data was filtered by source \& destination IP and exported using Wireshark:
 \begin{enumerate}
 	\item Filter in Wireshark using the command: (ip.src == 192.168.67.50) \&\& (ip.dst == 192.168.67.26)
 	\item Export to CSV: team02\_filtered.csv
@@ -57,8 +57,8 @@ The relevant data was filtered by source \& destination IP, using wireshark and 
 The histogram in Rapidminer was used to gain knowledge about the distribution of values in the messages.
 
 \begin{enumerate}
-	\item Imported team02\_filtered\_dec.csv into Rapidminer
-	\item By the use two protocol fields, it becomes visible that all traffic is split in TCP and UDP. The UDP traffic is then split into UDP and NTP
+	\item Imported team02\_filtered\_dec.csv in Rapidminer
+	\item By the use of two protocol fields (standard Protocol and ip.proto), it becomes visible that all traffic is split in TCP and UDP. The UDP traffic is then split into UDP and NTP
 	\item TTL is constant at 64, which means there is no entropy to store information
 	\item The source port varies for each stream, but not in any visible way that seems suitable for communication
 	\item The TCP flags have virtually no distribution
@@ -123,7 +123,7 @@ This result represents several repetitions of the following string including new
 
 Alternatively, Matlab or regular expressions could be used to filter the hexadecimal values.
 
-\item A hint provided in the instructions pointed to ASCII/8-Byte Hex encoding for the string. Python provides a simple decodes for this type of information:
+\item A hint provided in the instructions pointed to ASCII/8-Byte Hex encoding for the string. Python provides a simple decoder for this type of information:
 
 \begin{verbatim}
 decoded_string = encoded_string.decode("hex")
@@ -164,7 +164,7 @@ At this point, false conclusions were made implying suspicion about the possibil
 \end{itemize}
 it was concluded that a) sending a key in the same packets would be unwise (which does not imply that it was not an option) and b) the attackers obviously violate Kerckhoff's principle (see Ex.1) and that it would therefore be pragmatic to examine the data in the TTL field by itself.\\
 
-Since all advances yielded nothing, all steps were repeated to check for oversights and new pieces of evidence. Following the advice of the tutors, the output data of the multimodality estimation script was repadetly checked for anomalies:
+Since all advances yielded nothing, all steps were repeated to check for oversights and new pieces of evidence. Following the advice of the tutors, the output data of the multimodality estimation script was re-checked for anomalies:
 
 \begin{verbatim}
          Source		 Packets	 States	        Symbols
@@ -179,7 +179,7 @@ Since all advances yielded nothing, all steps were repeated to check for oversig
  192.168.202.001	      19	      1	     1.00000000
 \end{verbatim}
 
-After checking the traffic in Wireshark and Rapidminer, it became apparent that there was a binary channel from 192.168.198.049 to 192.168.22.2:443 from several source ports. The data was filtered in Wireshark using the following command:
+After checking the traffic in Wireshark and Rapidminer, it became apparent that there was a binary channel from several source ports at 192.168.198.049 to 192.168.22.2:443. The data was filtered in Wireshark using the following command:
 \begin{verbatim}
 (((((ip.src == 192.168.198.49) && (tcp.dstport == 443))) && (ip.dst == 192.168.22.2))))
 \end{verbatim}
@@ -194,14 +194,14 @@ Due to the spreading of data around several source ports a closer look was taken
 	\centering % centering figure 
 	%\scalebox{0.5} % rescale the figure by a factor of 0.8 
 	{\includegraphics[width=\textwidth]{images/ex2_scatter_src_no_49_2_wide.png}} % importing figure
-	\caption{Rapidminer Scatter Plot for source port vs. packet no. for a wide range of packets} 
+	\caption{Rapidminer scatter plot for source port vs. packet no. for a wide range of packets} 
 	\label{fig:RMscreen2} % labeling to refer it inside the text
 \end{figure} 
 \begin{figure}[H] 
 	\centering % centering figure 
 	%\scalebox{0.5} % rescale the figure by a factor of 0.8 
 	{\includegraphics[width=\textwidth]{images/ex2_scatter_src_no_49_2_tight.png}} % importing figure
-	\caption{Rapidminer Scatter Plot for source port vs. packet no. zoomed in on an anomalous burst} 
+	\caption{Rapidminer scatter plot for source port vs. packet no. zoomed in on an anomalous burst} 
 	\label{fig:RMscreen3} % labeling to refer it inside the text
 \end{figure} 
 
@@ -210,7 +210,7 @@ Due to the spreading of data around several source ports a closer look was taken
 \subsection*{Exercise 2 - Decoding the binary channel}
 The following steps were taken to determine whether the captured stream contains the desired traffic for decoding:
 \begin{itemize}
-\item Export TTL values with the filter applied as .csv file to get a list of all 56s and 64s.
+\item Export TTL values with the filter applied as .csv file to get a list of all values. The values are 56(1) and 64(0) for all packets, implying a clean binary channel.
 \item Convert the values to 0 and 1 using the LibreOffice's spreadsheet program (Excel equivalent) and string the values together to return the bitstring: 
 \begin{verbatim}
 01111110000000001010111001011100110011100001011010000110101
@@ -228,7 +228,7 @@ The following steps were taken to determine whether the captured stream contains
 \end{verbatim}
 This binary traffic looks promising, because of what looks like a symmetric initialization sequence (01111110) and a buffer sequence before the payload starts (00000000).
 
-\item Reversing the bitorder using Python since ASCII encoding has the MSB on the left. From the hint in exercise 2 it is known that when Right-MSB is given, the bitorder order inside the bytes has to be reversed. The payload was copied into a variable called string and reversed by using string[::-1]. This was automized for every byte.
+\item Reversing the bitorder using Python since ASCII encoding has the MSB on the left. From the hint in exercise 1 it is known that Right-MSB is given, therefore the bitorder inside the bytes has to be reversed. The payload was copied into a variable called string and reversed by using string[::-1] in Python.
 \item Convert the resulting bitstring to ASCII using an online decoder. This yields the desired text, but with backwards letter-order
 \item To finalize the text it was copied back into Python and reverse the symbol-order again to receive the "decoded" text:
 \end{itemize}
@@ -242,7 +242,7 @@ The result is a list of user/password combinations.
 \newpage
 \section*{Exercise 3 - Using Covert Channels}
 
-By looking at the traffic appearing in the Wireshark capture on the second screen, Jerry's machine was found to have the IP address 192.168.67.26, and by using ifconfig the local IP of Tom (192.168.67.31) has been determined.
+By looking at the traffic appearing in the Wireshark capture on the second screen, Jerry's machine was found to have the IP address 192.168.67.26, and the local IP of Tom was determined by using ifconfig (192.168.67.31).
 
 The terminal was used to ping the other computer:
 \begin{verbatim}
@@ -250,7 +250,7 @@ ping 192.168.67.26
 \end{verbatim}
 
 \subsection*{Rep. 3b - Firewall}
-The ping attempt clearly appeared on the other machines wire shark screen. However, the ping was not returned. The conclusion drawn from this is that ingress filtering may be responsible by the use of firewall software in the application layer. If the filtering had been conducted in the network layer, the ping would not have appeared on the Wireshark capture as incoming ping in the first place.
+The ping attempt clearly appeared on the other machine's Wireshark screen. However, the ping was not returned. The conclusion drawn from this is that ingress filtering may be responsible by the use of firewall software in the application layer. If the filtering had been conducted in the network layer, the ping would not have appeared in the Wireshark capture as incoming ping in the first place.
 
 \subsection*{Rep. 3c - Manipulating TCP packets to execute commands}
 In order to execute commands on Jerry's computer, spoofed packets were sent to the three web servers using tgn. The following commands were used in the terminal (see table for the specific field values):
@@ -325,6 +325,6 @@ p3p1      Link encap:Ethernet  HWaddr 94:de:80:6f:2e:45
           Interrupt:19 
 \end{verbatim}
 
-The conclusion after running the script is aaaaaaaaaaaaaaaaaaaa    --- live long and prosper
+We could now use this information about the network interfaces to start capturing packets on the target's network and send this captured traffic back to our computer.
 
 \end{document}
